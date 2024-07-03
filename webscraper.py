@@ -34,7 +34,7 @@ def get_files(files, base_url, download_path, extract_base_path):
                 full_url = urljoin(base_url, href)
                 urls.append(full_url)
 
-        for url in urls[:1]:  # Downloading the first file for demonstration
+        for url in urls:
             try:
                 print(f'Downloading from: {url}')
                 r = requests.get(url)
@@ -99,7 +99,7 @@ def process_mat_files(extract_base_path, output_csv_dir):
                 translate(mat_file_path, csv_file_path)
 
 def main():
-    files = ['DB1']  # List of files to be processed
+    files = ['DB1','DB2','DB4']  # List of files to be processed
     base_url = 'https://ninapro.hevs.ch/instructions/'
     download_path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\zipped'
     extract_base_path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\Open'
