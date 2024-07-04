@@ -95,7 +95,7 @@ def process_mat_files(extract_base_path, output_csv_dir):
         for file in files:
             if file.endswith('.mat'):
                 mat_file_path = os.path.join(root, file)
-                csv_file_path = os.path.join(output_csv_dir, f"{os.path.splitext(file)[0]}.csv")
+                csv_file_path = mat_file_path.replace('OPEN', 'CSV').replace('.mat', '.csv')
                 translate(mat_file_path, csv_file_path)
 
 def main():
