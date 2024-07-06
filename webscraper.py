@@ -6,22 +6,21 @@ from urllib.parse import urljoin
 from scipy.io import loadmat
 import pandas as pd
 
-def get_files(files, base_url, download_path, extract_base_path):
+def get_files(dbs, base_url, download_path):
     """
     Download and unzip files from a website.
 
     :param files: List of file identifiers to be processed.
     :param base_url: The base URL to form the download links.
     :param download_path: Path to download the zipped files.
-    :param extract_base_path: Path to extract the unzipped files.
     """
     # Ensure the download directory exists
     os.makedirs(download_path, exist_ok=True)
 
-    for file in files:
-        response = requests.get(f'{base_url}{file}.html')
+    for db in dbs:
+        response = requests.get(f'{base_url}{db}.html')
         if response.status_code != 200:
-            print(f"Failed to retrieve {file}.html")
+            print(f"Failed to retrieve {db}.html")
             continue
 
         webpage = response.text
@@ -41,15 +40,12 @@ def get_files(files, base_url, download_path, extract_base_path):
                 r.raise_for_status()
 
                 filename = os.path.basename(url)
-                fnout = os.path.join(download_path, filename)
-                extract_path = os.path.join(extract_base_path, file)
-
-                # Ensure the extract directory exists
-                os.makedirs(extract_path, exist_ok=True)
+                db_dir = os.path.join(download_path, db)
+                os.makedirs(db_dir, exist_ok=True)
+                fnout = os.path.join(db_dir, filename)
 
                 with open(fnout, 'wb') as f:
                     f.write(r.content)
-                unzip(fnout, extract_path)
 
             except requests.exceptions.RequestException as e:
                 print(f"Error downloading {url}: {e}")
@@ -68,6 +64,14 @@ def unzip(fnout, extract_path):
     except zipfile.BadZipFile:
         print(f"Failed to unzip {fnout}. It may be corrupted.")
 
+def unzip_all_files(dirpath):
+    for root, _, files in os.walk(dirpath):
+        for fn in files:
+            if not fn.startswith('.'):
+                fpin = os.path.join(root, fn)
+                fpout = root.replace('zip', 'mat')
+                unzip(fpin, fpout)
+
 def translate(mat_file, output_csv):
     """
     Translate a .mat file to a .csv file.
@@ -75,38 +79,52 @@ def translate(mat_file, output_csv):
     :param mat_file: Path to the .mat file.
     :param output_csv: Path to the output .csv file.
     """
+    print('Starting mat translate for', mat_file)
     mat = loadmat(mat_file)
     mat = {k: v for k, v in mat.items() if k[0] != '_'}
-    data = pd.DataFrame({k: pd.Series(v[0]) for k, v in mat.items()})
-    data.to_csv(output_csv, index=False)
-    print(f'Translated {mat_file} to {output_csv}')
 
-def process_mat_files(extract_base_path, output_csv_dir):
+    data = {}
+    for k, v in mat.items():
+        if len(v) == 1:
+            data[k] = v[0][0]
+        elif all(len(v[x]) == 1 for x in range(len(v))):
+            data[k] = [v[x][0] for x in range(len(v))]
+        else:
+            lists = v.transpose().tolist()
+            for i, l in enumerate(lists):
+                data[f'{k}{i}'] = l
+    # for key,value in data.items():
+          #print(key,len(value))
+
+    df = pd.DataFrame(data)
+    df.to_csv(output_csv, index=False)
+
+def process_mat_files(extract_base_path):
     """
     Process all .mat files in the extracted directories and translate them to CSV.
 
     :param extract_base_path: Base path where the files were extracted.
-    :param output_csv_dir: Directory to save the translated CSV files.
     """
-    # Ensure the output directory exists
-    os.makedirs(output_csv_dir, exist_ok=True)
 
     for root, _, files in os.walk(extract_base_path):
+        print(root)
+        os.makedirs(root.replace('mat', 'csv'), exist_ok=True)
         for file in files:
-            if file.endswith('.mat'):
-                mat_file_path = os.path.join(root, file)
-                csv_file_path = mat_file_path.replace('OPEN', 'CSV').replace('.mat', '.csv')
-                translate(mat_file_path, csv_file_path)
+            if not 'DB1'in root and not'DB2' in root:
+                if file.endswith('.mat'):
+                    mat_file_path = os.path.join(root, file)
+                    csv_file_path = mat_file_path.replace('mat', 'csv')
+                    translate(mat_file_path, csv_file_path)
 
 def main():
-    files = ['DB1','DB2','DB4']  # List of files to be processed
+    dbs = ['DB1', 'DB2', 'DB4']  # List of files to be processed
     base_url = 'https://ninapro.hevs.ch/instructions/'
-    download_path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\zipped'
-    extract_base_path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\Open'
-    output_csv_dir = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\CSV'
+    download_path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\'
+  #  get_files(dbs, base_url, download_path)
+    extract_base_path = download_path.replace('zip', 'mat')
+    #unzip_all_files(download_path)
 
-    get_files(files, base_url, download_path, extract_base_path)
-    process_mat_files(extract_base_path, output_csv_dir)
+    process_mat_files(extract_base_path)
 
 if __name__ == '__main__':
     main()
