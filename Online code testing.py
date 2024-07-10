@@ -21,10 +21,21 @@ for root, dirs, files in os.walk(base_path):
             print(new_file_path)
             df = pd.read_csv(full_file_path)  # reading from the preprocced dataset
             new_df = pd.DataFrame(columns=columns)
+            new_df['Ex+Sti+Rep'] = []
+
+            if 'E1' in file:
+                index = 120
+                ex = '1'
+            elif 'E2' in file:
+                index = 170
+                ex='2'
+            else:
+                index = 230
+                ex='3'
 
 
 
-            for indx in range(120):
+            for indx in range(index):
                 # established correct repition(10) and index (12)
                 re = indx % 10 +1
                 if indx < 10:
@@ -38,19 +49,19 @@ for root, dirs, files in os.walk(base_path):
 
                 filtered_df = df[(df['restimulus'] == stim) & (df['rerepetition'] == re)]
 
-                rep1S1 = {}  # holds all the 10 sets of EMG values
+                REP = {}  # holds all the 10 sets of EMG values
                 for i in range(0, 10):
-                    rep1S1[f'emgIN{i}'] = []
+                    REP[f'emgIN{i}'] = []
 
                 for index, row in filtered_df.iterrows():  # Taking the colums and putting it in vector
                     for x in range(0, 10):
-                        rep1S1[f'emgIN{x}'].append(row[f'emg{x}'])
+                        REP[f'emgIN{x}'].append(row[f'emg{x}'])
 
                 # putting the Lists into the rows
-                new_df.loc[indx] = [rep1S1['emgIN0'], rep1S1['emgIN1'], rep1S1['emgIN2'],
-                                  rep1S1['emgIN3'], rep1S1['emgIN4'], rep1S1['emgIN5'], rep1S1['emgIN6'],
-                                  rep1S1['emgIN7'], rep1S1['emgIN8'], rep1S1['emgIN9'], stim, re,
-                                  1]  # Stim #rep #excercise
+                new_df.loc[indx] = [REP['emgIN0'], REP['emgIN1'], REP['emgIN2'],
+                                    REP['emgIN3'], REP['emgIN4'], REP['emgIN5'], REP['emgIN6'],
+                                    REP['emgIN7'], REP['emgIN8'], REP['emgIN9'], stim, re,
+                                    ex,ex + '_' + str(stim) +'_'+ str(re)]  # Stim #rep #excercise #label
 
 
 
@@ -58,9 +69,13 @@ for root, dirs, files in os.walk(base_path):
 
 
 
+
+        # deleting unessassary things
+        del new_df['restimulus']
+        del new_df['exercise']
+        del new_df['rerepetition']
 
         new_df.to_csv(new_file_path, index=False)
-        break  # only once
 
     # for index, row in new_df.iterrows():
     #  print(f"Index: {index}")
