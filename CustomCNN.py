@@ -11,15 +11,13 @@ columns = [f'emg{x}' for x in range(10)]
 columns.extend(["restimulus", "rerepetition", "exercise"])
 print(columns)
 
-# Define the column defaults based on the actual data types
-column_defaults = [tf.float32] * 10 + [tf.int32, tf.int32, tf.int32]
+
 
 # Load the CSV dataset
 dataset = tf.data.experimental.make_csv_dataset(
     file_path,
     batch_size=32,
     column_names=columns,
-    column_defaults=column_defaults,
     label_name='restimulus',
     num_epochs=1,
     header=True
