@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
+import numpy as np
 
 # Path to the base directory
 base_path = "C:\\Users\\Aweso\\Downloads\\The folder\\Data\\PreProc\\db1"
@@ -21,12 +22,24 @@ for root, dirs, files in os.walk(base_path):
             df = pd.read_csv(full_file_path)  # reading from the preprocced dataset
             new_df = pd.DataFrame(columns=columns)
 
-            for re in range(10):
-                # looking for reps 1 - 10
-                filtered_df = df[(df['restimulus'] == 1) & (df['rerepetition'] == (re + 1))]
 
-                rep1S1 = {}  # holds all the 10 sets of EMG values for stimulation 1 repetition 1
-                for i in range(0, 10):  # initlizaed here to reuse variable below
+
+            for indx in range(120):
+                # established correct repition(10) and index (12)
+                re = indx % 10 +1
+                if indx < 10:
+                    stim = 1
+                elif indx < 100:
+                    stim = int(str(indx)[:1]) +1
+                else:
+                    stim = int(str(indx)[:2]) +1
+
+                filtered_df = pd.DataFrame() # hopefully clear the memory
+
+                filtered_df = df[(df['restimulus'] == stim) & (df['rerepetition'] == re)]
+
+                rep1S1 = {}  # holds all the 10 sets of EMG values
+                for i in range(0, 10):
                     rep1S1[f'emgIN{i}'] = []
 
                 for index, row in filtered_df.iterrows():  # Taking the colums and putting it in vector
@@ -34,10 +47,17 @@ for root, dirs, files in os.walk(base_path):
                         rep1S1[f'emgIN{x}'].append(row[f'emg{x}'])
 
                 # putting the Lists into the rows
-                new_df.loc[re] = [rep1S1['emgIN0'], rep1S1['emgIN1'], rep1S1['emgIN2'],
+                new_df.loc[indx] = [rep1S1['emgIN0'], rep1S1['emgIN1'], rep1S1['emgIN2'],
                                   rep1S1['emgIN3'], rep1S1['emgIN4'], rep1S1['emgIN5'], rep1S1['emgIN6'],
-                                  rep1S1['emgIN7'], rep1S1['emgIN8'], rep1S1['emgIN9'], 1, re + 1,
+                                  rep1S1['emgIN7'], rep1S1['emgIN8'], rep1S1['emgIN9'], stim, re,
                                   1]  # Stim #rep #excercise
+
+
+
+
+
+
+
 
         new_df.to_csv(new_file_path, index=False)
         break  # only once
