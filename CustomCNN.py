@@ -1,11 +1,11 @@
 import sys
 
 # Add the project directory to the Python path
-sys.path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\PreProc'
+data_path = 'C:\\Users\\Aweso\\Downloads\\The folder\\Data\\PreProc'
 
 # Verify the path was added correctly
 print("Python path:")
-print(sys.path)
+print(data_path)
 
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
