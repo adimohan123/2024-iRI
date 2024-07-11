@@ -21,7 +21,7 @@ for root, dirs, files in os.walk(base_path):
             print(new_file_path)
             df = pd.read_csv(full_file_path)  # reading from the preprocced dataset
             new_df = pd.DataFrame(columns=columns)
-            new_df['Ex+Sti+Rep'] = []
+            new_df['Ex+Sti'] = []
 
             if 'E1' in file:
                 index = 120
@@ -61,7 +61,7 @@ for root, dirs, files in os.walk(base_path):
                 new_df.loc[indx] = [REP['emgIN0'], REP['emgIN1'], REP['emgIN2'],
                                     REP['emgIN3'], REP['emgIN4'], REP['emgIN5'], REP['emgIN6'],
                                     REP['emgIN7'], REP['emgIN8'], REP['emgIN9'], stim, re,
-                                    ex,ex + '_' + str(stim) +'_'+ str(re)]  # Stim #rep #excercise #label
+                                    ex,ex + '_' + str(stim) ]  # Stim #rep #excercise #label
 
 
 

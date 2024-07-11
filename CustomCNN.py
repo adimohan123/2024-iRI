@@ -1,19 +1,27 @@
 import sys
+
+import numpy as np
+import pandas as pd
 import tensorflow as tf
 from tensorflow.keras import datasets, layers, models
 import matplotlib.pyplot as plt
 
 # Assuming the dataset is in CSV format and the file path is correct
-file_path = "C:\\Users\\Aweso\\Downloads\\The folder\\Data\\db1\\S9_A1_E3.csv"
+file_path = "C:\\Users\\Aweso\\Downloads\\The folder\\Data\\PreProc\\IOdb1\\S9_A1_E1.csv"
 
-# Define the column names and types (adjust these based on your dataset)
-columns = [f'emg{x}' for x in range(10)]
-columns.extend(["restimulus", "rerepetition", "exercise"])
-print(columns)
+df = pd.read_csv(file_path)
+# Prepare data
+columns = []
+for x in range (10):
+    columns.append(f'emg{x}')
+
+X = df[columns].to_numpy()  # Ensure 2D shape
+Y = df['Ex+Sti'].to_numpy()
 
 
 
 # Load the CSV dataset
+'''
 dataset = tf.data.experimental.make_csv_dataset(
     file_path,
     batch_size=32,
@@ -28,8 +36,10 @@ for features, label in dataset.take(1):
     print('Label:', label)
 
 '''
+print(X.shape)
+
 model = models.Sequential()
-model.add(layers.Conv1D(32,3,activation='relu'))
+model.add(layers.Conv2D(32,(3,3),activation='relu',input_shape = X.shape))
 model.add(layers.MaxPooling2D((2, 2)))
 model.add(layers.Conv2D(64, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
@@ -58,4 +68,4 @@ plt.legend(loc='lower right')
 test_loss, test_acc = model.evaluate(test_images, test_labels, verbose=2)
 
 print(test_acc)
-'''
+
